@@ -1,0 +1,96 @@
+---
+title: "steriod"
+author: "Brooks Coetzee III"
+date: "2023-02-21"
+output: html_document
+---
+
+Library:
+```{r}
+library(tidyverse)
+library(dplyr)
+library(stringr)
+```
+
+```{r}
+airlines <- read_csv("Desktop/airlines.graphml")
+View(airlines)
+
+airlines <- airlines[-1,]
+
+nodes <- airlines[1:1175,]
+
+ID = nodes[seq(1, nrow(nodes), 5), ]
+
+X = nodes[seq(2, nrow(nodes), 5), ]
+
+Y = nodes[seq(4, nrow(nodes), 5), ]
+
+TOOLTIP = nodes[seq(3, nrow(nodes), 5), ]
+
+nodesfinal <- cbind(ID,X,Y,TOOLTIP)
+
+nodesfinal <- as.data.frame(nodesfinal)
+
+
+nodesfinal$ID <- nodesfinal[,1]
+
+nodesfinal$X <- nodesfinal[,2]
+
+nodesfinal$Y <- nodesfinal[,3]
+
+nodesfinal$ToolTip <- nodesfinal[,4]
+
+nodesfinal <- nodesfinal[,5:8]
+
+```
+
+```{r}
+nodesfinal$ID <- str_remove_all(nodesfinal$ID,'<node id="')
+
+nodesfinal$ID <- str_remove_all(nodesfinal$ID,'">')
+
+nodesfinal$X <- str_remove_all(nodesfinal$X,'<data key="x">')
+
+nodesfinal$X <- str_remove_all(nodesfinal$X,"</data>")
+
+nodesfinal$Y <- str_remove_all(nodesfinal$Y,'<data key="y">')
+
+nodesfinal$Y <- str_remove_all(nodesfinal$Y,"</data>")
+
+nodesfinal$ToolTip <- str_remove_all(nodesfinal$ToolTip,'<data key="tooltip">')
+
+nodesfinal$ToolTip <- str_remove_all(nodesfinal$ToolTip, "</data>")
+
+nodesfinal$ToolTip <- substr(nodesfinal$ToolTip, 1, 3)
+
+write_csv(nodesfinal, file = "airplanenodes.csv")
+```
+
+```{r}
+edges <- airlines[1180:5384,]
+
+edges <- edges[-4204,]
+
+edgeinfo = edges[seq(2, nrow(edges), 2), ]
+
+edgeinfo$info <- edgeinfo$`<?xml version="1.0" encoding="UTF-8"?>`
+
+edgeinfo <- edgeinfo[,-1]
+
+edgeinfo$info <-str_remove_all(edgeinfo$info,'<edge id=')
+
+edgeinfo$info <-str_remove_all(edgeinfo$info,'source=')
+
+edgeinfo$info <-str_remove_all(edgeinfo$info,'target=')
+
+edgeinfo$info <-str_remove_all(edgeinfo$info,'"')
+
+edgeinfo[c('Edge ID', 'Source', 'Target')] <- str_split_fixed(edgeinfo$info, ' ', 3)
+
+edgeinfo <- edgeinfo[,-1]
+
+write_csv(edgeinfo, file = "airplaneedges.csv")
+
+```
+
